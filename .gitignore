@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+*/node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Next.js build output
+.next/
+*/.next/
+frontend/.next/
+out/
+build/
+dist/
+
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

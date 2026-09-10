@@ -1,0 +1,99 @@
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+const Blog = require('../models/Blog');
+const { protect } = require('../middleware/auth');
+
+// @route GET /api/blogs
+router.get('/', async (req, res) => {
+  try {
+    const { companyId, status, includeAll } = req.query;
+    const filter = { isDeleted: false };
+    
+    if (companyId && companyId !== 'all' && mongoose.Types.ObjectId.isValid(companyId)) {
+      filter.companyId = companyId;
+    }
+    
+    if (status) {
+      filter.status = status;
+    } else if (!includeAll) {
+      filter.status = 'Publish';
+    }
+
+    const blogs = await Blog.find(filter).populate('companyId', 'name code slug').sort({ publishDate: -1, createdAt: -1 });
+    res.json({ success: true, count: blogs.length, data: blogs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route GET /api/blogs/:id
+router.get('/:id', async (req, res) => {
+  try {
+    let blog = null;
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      blog = await Blog.findById(req.params.id).populate('companyId', 'name code slug');
+    }
+    if (!blog) {
+      blog = await Blog.findOne({
+        $or: [{ slug: req.params.id }, { id: req.params.id }],
+        isDeleted: false
+      }).populate('companyId', 'name code slug');
+    }
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog post not found' });
+    }
+    res.json({ success: true, data: blog });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route POST /api/blogs
+router.post('/', protect, async (req, res) => {
+  try {
+    const blog = await Blog.create(req.body);
+    res.status(201).json({ success: true, data: blog });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// @route PUT /api/blogs/:id
+router.put('/:id', protect, async (req, res) => {
+  try {
+    const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!blog) return res.status(404).json({ success: false, message: 'Blog post not found' });
+    res.json({ success: true, data: blog });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// @route PATCH /api/blogs/:id/status
+router.patch('/:id/status', protect, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['Draft', 'Publish', 'Hide'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+    const blog = await Blog.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!blog) return res.status(404).json({ success: false, message: 'Blog post not found' });
+    res.json({ success: true, data: blog });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// @route DELETE /api/blogs/:id
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const blog = await Blog.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+    if (!blog) return res.status(404).json({ success: false, message: 'Blog post not found' });
+    res.json({ success: true, message: 'Blog soft-deleted', data: blog });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+module.exports = router;
