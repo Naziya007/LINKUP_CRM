@@ -256,13 +256,22 @@ Writing compelling digital content requires a solid structure and clear formatti
     }
 
     const items = text.split(/\n\n+/);
-    const blocks: { type: 'h1' | 'h2' | 'h3' | 'list' | 'quote' | 'table' | 'p'; items: string[] }[] = [];
+    const blocks: { type: 'h1' | 'h2' | 'h3' | 'list' | 'quote' | 'table' | 'image' | 'p'; items: string[] }[] = [];
 
     items.forEach((item) => {
       const trimmed = item.trim();
       if (!trimmed) return;
 
-      if (trimmed.startsWith('### ')) {
+      const imgMatch = trimmed.match(/!\[(.*?)\]\((.*?)\)/);
+      if (imgMatch) {
+        blocks.push({ type: 'image', items: [imgMatch[2], imgMatch[1] || 'Article image'] });
+      } else if (trimmed.startsWith('<img')) {
+        const srcMatch = trimmed.match(/src=["'](.*?)["']/);
+        const altMatch = trimmed.match(/alt=["'](.*?)["']/);
+        if (srcMatch && srcMatch[1]) {
+          blocks.push({ type: 'image', items: [srcMatch[1], altMatch ? altMatch[1] : 'Article image'] });
+        }
+      } else if (trimmed.startsWith('### ')) {
         blocks.push({ type: 'h3', items: [trimmed.replace(/^###\s+/, '')] });
       } else if (trimmed.startsWith('## ')) {
         blocks.push({ type: 'h2', items: [trimmed.replace(/^##\s+/, '')] });
@@ -291,6 +300,20 @@ Writing compelling digital content requires a solid structure and clear formatti
           }
           if (block.type === 'h3') {
             return <h3 key={idx} className="text-lg sm:text-xl font-extrabold text-slate-800 mt-3 mb-1.5">{block.items[0]}</h3>;
+          }
+          if (block.type === 'image') {
+            return (
+              <figure key={idx} className="my-4 space-y-2">
+                <div className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-950">
+                  <img src={block.items[0]} alt={block.items[1]} className="w-full h-auto object-cover max-h-[450px]" />
+                </div>
+                {block.items[1] && block.items[1] !== 'Article image' && (
+                  <figcaption className="text-center text-xs font-bold text-slate-500 italic">
+                    📷 {block.items[1]}
+                  </figcaption>
+                )}
+              </figure>
+            );
           }
           if (block.type === 'quote') {
             return (

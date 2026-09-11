@@ -80,14 +80,23 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
       return <div className="text-slate-500 italic py-4">No content provided for this blog article.</div>;
     }
 
-    // Group rawItems into structured blocks (Headings, Lists, Paragraphs)
-    const blocks: { type: 'h1' | 'h2' | 'h3' | 'list' | 'p'; items: string[] }[] = [];
+    // Group rawItems into structured blocks (Headings, Lists, Images, Paragraphs)
+    const blocks: { type: 'h1' | 'h2' | 'h3' | 'list' | 'image' | 'p'; items: string[] }[] = [];
 
     rawItems.forEach((item) => {
       const trimmed = item.trim();
       if (!trimmed) return;
 
-      if (trimmed.startsWith('### ')) {
+      const imgMatch = trimmed.match(/!\[(.*?)\]\((.*?)\)/);
+      if (imgMatch) {
+        blocks.push({ type: 'image', items: [imgMatch[2], imgMatch[1] || 'Article image'] });
+      } else if (trimmed.startsWith('<img')) {
+        const srcMatch = trimmed.match(/src=["'](.*?)["']/);
+        const altMatch = trimmed.match(/alt=["'](.*?)["']/);
+        if (srcMatch && srcMatch[1]) {
+          blocks.push({ type: 'image', items: [srcMatch[1], altMatch ? altMatch[1] : 'Article image'] });
+        }
+      } else if (trimmed.startsWith('### ')) {
         blocks.push({ type: 'h3', items: [trimmed.replace(/^###\s+/, '')] });
       } else if (trimmed.startsWith('## ')) {
         blocks.push({ type: 'h2', items: [trimmed.replace(/^##\s+/, '')] });
@@ -128,6 +137,20 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
               <h3 key={idx} className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-8 mb-3">
                 {block.items[0]}
               </h3>
+            );
+          }
+          if (block.type === 'image') {
+            return (
+              <figure key={idx} className="my-8 space-y-2">
+                <div className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-950">
+                  <img src={block.items[0]} alt={block.items[1]} className="w-full h-auto object-cover max-h-[600px]" />
+                </div>
+                {block.items[1] && block.items[1] !== 'Article image' && (
+                  <figcaption className="text-center text-xs font-bold text-slate-500 italic">
+                    📷 {block.items[1]}
+                  </figcaption>
+                )}
+              </figure>
             );
           }
           if (block.type === 'list') {
