@@ -6,6 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import { adminFetch } from '@/lib/adminApi';
 import ImageUploadInput from '@/components/admin/ImageUploadInput';
 import SeoFormSection, { SEOFields } from '@/components/admin/SeoFormSection';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 import {
   HiOutlinePlus,
   HiOutlinePencil,
@@ -336,49 +337,49 @@ export default function BlogsAdminPage() {
       </div>
 
       {/* Filter & View Mode Controls Bar */}
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-white p-4 rounded-2xl border-2 border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 sm:gap-4 bg-white p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 shadow-sm">
         <div className="relative flex-1 w-full">
-          <HiOutlineSearch className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <HiOutlineSearch className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search articles by title, category, or tags..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl pl-12 pr-4 py-3 text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-cyan-600"
+            className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-cyan-600"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           <select
             value={companyFilter}
             onChange={(e) => setCompanyFilter(e.target.value)}
-            className="bg-slate-50 border-2 border-slate-300 hover:border-cyan-600 text-cyan-800 font-extrabold text-base rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-600 cursor-pointer"
+            className="bg-slate-50 border-2 border-slate-300 hover:border-cyan-600 text-cyan-800 font-extrabold text-xs sm:text-base rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:border-cyan-600 cursor-pointer w-full sm:w-auto min-w-0 truncate max-w-full"
           >
-            <option value="all" className="bg-white text-cyan-700 font-bold">🌐 All Companies (Overview)</option>
+            <option value="all" className="bg-white text-cyan-700 font-bold">🌐 All Companies</option>
             {companies.map((c) => (
               <option key={c._id} value={c._id} className="bg-white text-slate-900 font-bold">
-                {c.name} ({c.code})
+                {c.name}
               </option>
             ))}
           </select>
 
-          <div className="flex items-center gap-1 border-2 border-slate-200 rounded-xl p-1 bg-slate-50 shrink-0">
+          <div className="flex items-center justify-center gap-1 border-2 border-slate-200 rounded-xl p-1 bg-slate-50 shrink-0">
             <button
               onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-extrabold transition-all cursor-pointer ${
-                viewMode === 'grid' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                viewMode === 'grid' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <HiOutlineViewGrid className="w-5 h-5" />
+              <HiOutlineViewGrid className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Cards</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-extrabold transition-all cursor-pointer ${
-                viewMode === 'table' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                viewMode === 'table' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <HiOutlineViewList className="w-5 h-5" />
+              <HiOutlineViewList className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Table</span>
             </button>
           </div>
@@ -910,15 +911,12 @@ export default function BlogsAdminPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-base font-bold text-slate-800 mb-2">Article Content (Markdown / HTML)</label>
-                <textarea
-                  rows={8}
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-4 py-3.5 text-base font-mono font-medium text-slate-900 focus:outline-none focus:border-cyan-600 leading-relaxed"
-                />
-              </div>
+              <RichTextEditor
+                label="Article Content (Markdown / HTML)"
+                value={formData.content}
+                onChange={(content) => setFormData({ ...formData, content })}
+                rows={10}
+              />
 
               <div>
                 <label className="block text-base font-bold text-slate-800 mb-2">Tags (comma separated)</label>
@@ -962,18 +960,18 @@ export default function BlogsAdminPage() {
                 onChange={(seo) => setFormData({ ...formData, seo })}
               />
 
-              <div className="pt-5 border-t border-slate-200 flex justify-end gap-4">
+              <div className="pt-4 sm:pt-5 border-t border-slate-200 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-base font-bold rounded-xl border border-slate-300 transition-colors"
+                  className="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm sm:text-base font-bold rounded-xl border border-slate-300 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-7 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-base rounded-xl cursor-pointer shadow-md transition-all"
+                  className="w-full sm:w-auto px-7 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-sm sm:text-base rounded-xl cursor-pointer shadow-md transition-all"
                 >
                   {saving ? 'Saving...' : 'Save Article'}
                 </button>

@@ -37,11 +37,11 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
               const comp = companies.find((c) => c._id === e.target.value);
               if (comp) setSelectedCompany(comp);
             }}
-            className="appearance-none bg-slate-50 border border-slate-300 hover:border-cyan-600 text-cyan-800 font-bold text-xs sm:text-sm rounded-lg px-3 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer shadow-xs max-w-[150px] sm:max-w-none"
+            className="appearance-none bg-slate-50 border border-slate-300 hover:border-cyan-600 text-cyan-800 font-bold text-xs sm:text-sm rounded-lg px-3 py-1.5 pr-7 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all cursor-pointer shadow-xs max-w-[130px] sm:max-w-xs truncate"
           >
             {companies.map((company) => (
               <option key={company._id} value={company._id} className="bg-white text-slate-900 font-medium text-xs">
-                {company.name} ({company.code})
+                {company.name}
               </option>
             ))}
           </select>

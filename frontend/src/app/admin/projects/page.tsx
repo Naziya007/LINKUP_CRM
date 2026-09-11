@@ -336,47 +336,47 @@ export default function ProjectsAdminPage() {
       </div>
 
       {/* Controls: Search, Filter & View Switcher */}
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-white p-4 rounded-2xl border-2 border-slate-200 shadow-sm">
-        <div className="relative flex-1 w-full">
-          <HiOutlineSearch className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 sm:gap-4 bg-white p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 shadow-sm w-full max-w-full">
+        <div className="relative flex-1 w-full min-w-0">
+          <HiOutlineSearch className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search projects by title, category, or tags..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-12 pr-4 py-3 text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-cyan-600"
+            className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-cyan-600"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-2 text-slate-800 text-base font-extrabold whitespace-nowrap">
-            <HiOutlineBuildingOffice2 className="w-5 h-5 text-cyan-600" />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto min-w-0">
+          <div className="flex items-center gap-2 text-slate-800 text-xs sm:text-base font-extrabold shrink-0">
+            <HiOutlineBuildingOffice2 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
             <span>Filter Company:</span>
           </div>
           <select
             value={companyFilter}
             onChange={(e) => setCompanyFilter(e.target.value)}
-            className="bg-slate-50 border-2 border-slate-300 hover:border-cyan-600 text-cyan-800 font-extrabold text-base rounded-xl px-4 py-2.5 focus:outline-none focus:border-cyan-600 cursor-pointer"
+            className="bg-slate-50 border-2 border-slate-300 hover:border-cyan-600 text-cyan-800 font-extrabold text-xs sm:text-base rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 focus:outline-none focus:border-cyan-600 cursor-pointer w-full sm:w-auto min-w-0 truncate max-w-full"
           >
-            <option value="all" className="bg-white text-cyan-700 font-bold">🌐 All Companies (Overview)</option>
+            <option value="all" className="bg-white text-cyan-700 font-bold">🌐 All Companies</option>
             {companies.map((c) => (
               <option key={c._id} value={c._id} className="bg-white text-slate-900 font-bold">
-                {c.name} ({c.code})
+                {c.name}
               </option>
             ))}
           </select>
 
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-300">
+          <div className="flex items-center justify-center bg-slate-100 p-1 rounded-xl border border-slate-300 shrink-0">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`flex-1 sm:flex-initial p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'}`}
               title="Card Grid View"
             >
               <HiOutlineViewGrid className="w-5 h-5" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`flex-1 sm:flex-initial p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900'}`}
               title="Table View"
             >
               <HiOutlineViewList className="w-5 h-5" />
