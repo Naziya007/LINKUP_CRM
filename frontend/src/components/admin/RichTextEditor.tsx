@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { uploadImage } from '@/lib/adminApi';
 import {
   HiOutlinePencil,
   HiOutlineEye,
@@ -10,7 +11,8 @@ import {
   HiOutlineTable,
   HiOutlineTrash,
   HiOutlineDocumentText,
-  HiOutlineClipboardList
+  HiOutlineClipboardList,
+  HiOutlineCloudUpload
 } from 'react-icons/hi';
 
 interface RichTextEditorProps {
@@ -40,8 +42,10 @@ export default function RichTextEditor({
   const [fontFamily, setFontFamily] = useState<string>('Arial');
   const [fontSize, setFontSize] = useState<string>('16');
   const [textColor, setTextColor] = useState<string>('#000000');
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Calculate cursor line & col
   const handleSelectionChange = () => {
@@ -119,6 +123,9 @@ export default function RichTextEditor({
   };
 
   // Formatting actions
+  const handleH1 = () => applyLinePrefix('# ');
+  const handleH2 = () => applyLinePrefix('## ');
+  const handleH3 = () => applyLinePrefix('### ');
   const handleBold = () => wrapOrInsert('**', '**', 'bold text');
   const handleItalic = () => wrapOrInsert('*', '*', 'italic text');
   const handleUnderline = () => wrapOrInsert('<u>', '</u>', 'underlined text');
@@ -165,6 +172,31 @@ export default function RichTextEditor({
     if (!url) return;
     const alt = prompt('Enter image alt text / caption:', 'Image caption') || 'Image';
     wrapOrInsert(`![${alt}](`, `${url})`);
+  };
+
+  const handleTriggerUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const res = await uploadImage(file, 'linkup_blogs');
+      if (res && res.url) {
+        const alt = prompt('Image uploaded! Enter image caption / alt text:', file.name.split('.')[0]) || 'Article image';
+        wrapOrInsert(`\n\n![${alt}](${res.url})\n\n`);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+      if (e.target) e.target.value = '';
+    }
   };
 
   const handleTable = () => {
@@ -483,11 +515,32 @@ Writing compelling digital content requires a solid structure and clear formatti
               <button
                 type="button"
                 onClick={handleImage}
-                title="Insert Image"
+                title="Insert Image URL"
                 className="p-1 sm:p-1.5 rounded hover:bg-slate-200 hover:text-cyan-800 border border-transparent hover:border-slate-300 text-slate-700 cursor-pointer"
               >
                 <HiOutlinePhotograph className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
+              <button
+                type="button"
+                onClick={handleTriggerUpload}
+                disabled={uploadingImage}
+                title="Upload Image File to Cloudinary & Insert"
+                className="px-2 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-[11px] sm:text-xs flex items-center gap-1 cursor-pointer transition-all shadow-2xs shrink-0"
+              >
+                {uploadingImage ? (
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <HiOutlineCloudUpload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                )}
+                <span>{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*"
+                className="hidden"
+              />
               <button
                 type="button"
                 onClick={handleTable}
@@ -621,6 +674,34 @@ Writing compelling digital content requires a solid structure and clear formatti
                 className="px-2 py-0.5 sm:px-2.5 sm:py-1 line-through font-bold text-xs sm:text-sm bg-white hover:bg-slate-200 border border-slate-300 rounded text-slate-900 cursor-pointer shadow-2xs"
               >
                 S
+              </button>
+
+              <div className="w-px h-4 sm:h-5 bg-slate-300 mx-0.5 sm:mx-1" />
+
+              {/* Headings: H1, H2, H3 */}
+              <button
+                type="button"
+                onClick={handleH1}
+                title="Heading 1 (#)"
+                className="px-2 py-0.5 sm:px-2.5 sm:py-1 font-black text-xs sm:text-sm bg-cyan-50 hover:bg-cyan-100 border border-cyan-300 rounded text-cyan-900 cursor-pointer shadow-2xs"
+              >
+                H1
+              </button>
+              <button
+                type="button"
+                onClick={handleH2}
+                title="Heading 2 (##)"
+                className="px-2 py-0.5 sm:px-2.5 sm:py-1 font-black text-xs sm:text-sm bg-cyan-50 hover:bg-cyan-100 border border-cyan-300 rounded text-cyan-900 cursor-pointer shadow-2xs"
+              >
+                H2
+              </button>
+              <button
+                type="button"
+                onClick={handleH3}
+                title="Heading 3 (###)"
+                className="px-2 py-0.5 sm:px-2.5 sm:py-1 font-black text-xs sm:text-sm bg-cyan-50 hover:bg-cyan-100 border border-cyan-300 rounded text-cyan-900 cursor-pointer shadow-2xs"
+              >
+                H3
               </button>
 
               <button
