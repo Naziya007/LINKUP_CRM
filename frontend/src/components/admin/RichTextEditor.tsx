@@ -188,6 +188,9 @@ export default function RichTextEditor({
     try {
       const res = await uploadImage(file, 'linkup_blogs');
       if (res && res.url) {
+        if (res.url.startsWith('data:image/')) {
+          alert('⚠️ Cloudinary is not configured on your backend server!\n\nThe uploaded image was converted to a local Base64 string. To get clean Cloudinary HTTPS image links (e.g. https://res.cloudinary.com/...), add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your backend .env and redeploy your backend.');
+        }
         const alt = prompt('Image uploaded! Enter image caption / alt text:', file.name.split('.')[0]) || 'Article image';
         wrapOrInsert(`\n\n![${alt}](${res.url})\n\n`);
       }
