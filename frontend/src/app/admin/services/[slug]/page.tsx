@@ -336,7 +336,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
       }
 
       setIsLocationModalOpen(false);
-      fetchLocationServices(service._id);
+      fetchLocationServices(service);
     } catch (err: any) {
       alert(err.message || 'Failed to save location service');
     } finally {
