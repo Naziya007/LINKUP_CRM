@@ -16,6 +16,9 @@ const SEOSchema = new mongoose.Schema({
 
 const ServiceSchema = new mongoose.Schema({
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
+  parentServiceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', default: null },
+  location: { type: String, default: '' },
+  isLocationService: { type: Boolean, default: false },
   serviceName: { type: String, required: true },
   title: { type: String },
   titleLines: [{ type: String }],
@@ -26,6 +29,28 @@ const ServiceSchema = new mongoose.Schema({
   fullDescription: { type: String },
   tags: [{ type: String }],
   deliverables: [{ type: String }],
+  processSteps: [{
+    stepNumber: Number,
+    title: String,
+    description: String
+  }],
+  features: [{
+    title: String,
+    description: String,
+    icon: String
+  }],
+  faqs: [{
+    question: String,
+    answer: String
+  }],
+  pricing: {
+    startingAt: { type: String, default: '' },
+    packageDetails: { type: String, default: '' }
+  },
+  cta: {
+    text: { type: String, default: '' },
+    url: { type: String, default: '' }
+  },
   image: {
     url: { type: String, default: '' },
     publicId: { type: String, default: '' }

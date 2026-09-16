@@ -7,11 +7,25 @@ const { protect } = require('../middleware/auth');
 // @route GET /api/faqs
 router.get('/', async (req, res) => {
   try {
-    const { companyId, includeHidden } = req.query;
+    const { companyId, includeHidden, pageSlug, includePageFaqs } = req.query;
     const filter = { isDeleted: false };
     
     if (companyId && companyId !== 'all' && mongoose.Types.ObjectId.isValid(companyId)) {
       filter.companyId = companyId;
+    }
+
+    if (pageSlug) {
+      // Page level F&Q — used by the F&Q section at the bottom of every page.
+      filter.pageSlug = pageSlug;
+    } else if (includePageFaqs !== 'true') {
+      // Unfiltered requests keep returning only the site-wide FAQs so the
+      // page level F&Q can never leak into the public website FAQ list.
+      filter.$or = [
+        { pageSlug: 'all' },
+        { pageSlug: { $exists: false } },
+        { pageSlug: null },
+        { pageSlug: '' }
+      ];
     }
     
     if (!includeHidden) filter.isVisible = true;

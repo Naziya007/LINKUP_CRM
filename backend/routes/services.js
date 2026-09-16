@@ -7,7 +7,7 @@ const { protect } = require('../middleware/auth');
 // @route GET /api/services?companyId=...
 router.get('/', async (req, res) => {
   try {
-    const { companyId, includeHidden } = req.query;
+    const { companyId, includeHidden, parentServiceId, includeLocationServices } = req.query;
     const filter = { isDeleted: false };
     
     if (companyId && companyId !== 'all' && mongoose.Types.ObjectId.isValid(companyId)) {
@@ -16,11 +16,73 @@ router.get('/', async (req, res) => {
     
     if (!includeHidden) filter.isVisible = true;
 
+    if (parentServiceId) {
+      if (mongoose.Types.ObjectId.isValid(parentServiceId)) {
+        filter.parentServiceId = parentServiceId;
+      }
+    } else if (includeLocationServices !== 'true') {
+      // By default, exclude location-specific services to keep main services clean and separated
+      filter.$or = [{ parentServiceId: null }, { parentServiceId: { $exists: false } }, { isLocationService: false }];
+    }
+
     const services = await Service.find(filter)
       .populate('companyId', 'name code slug')
+      .populate('parentServiceId', 'serviceName title slug')
       .sort({ displayOrder: 1, createdAt: -1 });
 
     res.json({ success: true, count: services.length, data: services });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route GET /api/services/:id/locations
+router.get('/:id/locations', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let parentService;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      parentService = await Service.findById(id);
+    }
+    if (!parentService) {
+      parentService = await Service.findOne({ slug: id, isDeleted: false });
+    }
+    if (!parentService) {
+      return res.status(404).json({ success: false, message: 'Parent service not found' });
+    }
+
+    const locationServices = await Service.find({
+      parentServiceId: parentService._id,
+      isDeleted: false
+    })
+      .populate('companyId', 'name code slug')
+      .sort({ displayOrder: 1, createdAt: -1 });
+
+    res.json({ success: true, count: locationServices.length, data: locationServices });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route GET /api/services/:id
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let service;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      service = await Service.findById(id)
+        .populate('companyId', 'name code slug')
+        .populate('parentServiceId', 'serviceName title slug location');
+    }
+    if (!service) {
+      service = await Service.findOne({ slug: id, isDeleted: false })
+        .populate('companyId', 'name code slug')
+        .populate('parentServiceId', 'serviceName title slug location');
+    }
+    if (!service || service.isDeleted) {
+      return res.status(404).json({ success: false, message: 'Service not found' });
+    }
+    res.json({ success: true, data: service });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
