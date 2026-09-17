@@ -1,0 +1,99 @@
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+const CaseStudy = require('../models/CaseStudy');
+const { protect } = require('../middleware/auth');
+
+// @route GET /api/case-studies
+router.get('/', async (req, res) => {
+  try {
+    const { companyId, status, includeAll } = req.query;
+    const filter = { isDeleted: false };
+    
+    if (companyId && companyId !== 'all' && mongoose.Types.ObjectId.isValid(companyId)) {
+      filter.companyId = companyId;
+    }
+    
+    if (status) {
+      filter.status = status;
+    } else if (!includeAll) {
+      filter.status = 'Publish';
+    }
+
+    const caseStudies = await CaseStudy.find(filter).populate('companyId', 'name code slug').sort({ publishDate: -1, createdAt: -1 });
+    res.json({ success: true, count: caseStudies.length, data: caseStudies });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route GET /api/case-studies/:id
+router.get('/:id', async (req, res) => {
+  try {
+    let caseStudy = null;
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      caseStudy = await CaseStudy.findById(req.params.id).populate('companyId', 'name code slug');
+    }
+    if (!caseStudy) {
+      caseStudy = await CaseStudy.findOne({
+        $or: [{ slug: req.params.id }, { id: req.params.id }],
+        isDeleted: false
+      }).populate('companyId', 'name code slug');
+    }
+    if (!caseStudy) {
+      return res.status(404).json({ success: false, message: 'Case Study not found' });
+    }
+    res.json({ success: true, data: caseStudy });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route POST /api/case-studies
+router.post('/', protect, async (req, res) => {
+  try {
+    const caseStudy = await CaseStudy.create(req.body);
+    res.status(201).json({ success: true, data: caseStudy });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// @route PUT /api/case-studies/:id
+router.put('/:id', protect, async (req, res) => {
+  try {
+    const caseStudy = await CaseStudy.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!caseStudy) return res.status(404).json({ success: false, message: 'Case Study not found' });
+    res.json({ success: true, data: caseStudy });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// @route PATCH /api/case-studies/:id/status
+router.patch('/:id/status', protect, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['Draft', 'Publish', 'Hide'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+    const caseStudy = await CaseStudy.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!caseStudy) return res.status(404).json({ success: false, message: 'Case Study not found' });
+    res.json({ success: true, data: caseStudy });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// @route DELETE /api/case-studies/:id
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const caseStudy = await CaseStudy.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+    if (!caseStudy) return res.status(404).json({ success: false, message: 'Case Study not found' });
+    res.json({ success: true, message: 'Case Study soft-deleted', data: caseStudy });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+module.exports = router;

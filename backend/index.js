@@ -28,6 +28,7 @@ app.use('/api/projects', require('./routes/projects'));
 app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/faqs', require('./routes/faqs'));
 app.use('/api/blogs', require('./routes/blogs'));
+app.use('/api/case-studies', require('./routes/caseStudies'));
 app.use('/api/seo', require('./routes/seo'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/upload', require('./routes/upload'));

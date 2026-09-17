@@ -9,6 +9,7 @@ import {
   HiOutlineFolderOpen,
   HiOutlineChatAlt2,
   HiOutlineDocumentText,
+  HiOutlineBookOpen,
   HiOutlineQuestionMarkCircle,
   HiOutlinePlus,
   HiOutlineArrowRight
@@ -20,6 +21,7 @@ interface CompanyStats {
   projectsCount: number;
   servicesCount: number;
   blogsCount: number;
+  caseStudiesCount: number;
   testimonialsCount: number;
   faqsCount: number;
 }
@@ -37,10 +39,11 @@ export default function AdminDashboardPage() {
       try {
         const statsPromises = companies.map(async (comp) => {
           const query = `?companyId=${comp._id}&includeHidden=true`;
-          const [sRes, pRes, bRes, tRes, fRes] = await Promise.allSettled([
+          const [sRes, pRes, bRes, csRes, tRes, fRes] = await Promise.allSettled([
             adminFetch(`/services${query}`),
             adminFetch(`/projects${query}`),
             adminFetch(`/blogs${query}&includeAll=true`),
+            adminFetch(`/case-studies${query}&includeAll=true`),
             adminFetch(`/testimonials${query}`),
             adminFetch(`/faqs${query}`)
           ]);
@@ -50,6 +53,7 @@ export default function AdminDashboardPage() {
             servicesCount: sRes.status === 'fulfilled' ? sRes.value.count || 0 : 0,
             projectsCount: pRes.status === 'fulfilled' ? pRes.value.count || 0 : 0,
             blogsCount: bRes.status === 'fulfilled' ? bRes.value.count || 0 : 0,
+            caseStudiesCount: csRes.status === 'fulfilled' ? csRes.value.count || 0 : 0,
             testimonialsCount: tRes.status === 'fulfilled' ? tRes.value.count || 0 : 0,
             faqsCount: fRes.status === 'fulfilled' ? fRes.value.count || 0 : 0,
           };
@@ -64,6 +68,7 @@ export default function AdminDashboardPage() {
           projectsCount: 2,
           servicesCount: 1,
           blogsCount: 3,
+          caseStudiesCount: 2,
           testimonialsCount: 2,
           faqsCount: 1
         })));
@@ -88,7 +93,7 @@ export default function AdminDashboardPage() {
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">CMS Management Dashboard</h1>
           <p className="text-xs text-slate-500 mt-1 max-w-xl font-medium leading-relaxed">
-            Manage projects, services, blogs, and SEO independently for each of the 4 Linkup Group websites.
+            Manage projects, services, blogs, case studies, and SEO independently for each of the 4 Linkup Group websites.
           </p>
         </div>
 
@@ -116,7 +121,7 @@ export default function AdminDashboardPage() {
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
             Active Company Summary ({selectedCompany.name})
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
             <Link href="/admin/services" className="p-4 bg-white border border-slate-200 hover:border-cyan-500 rounded-xl shadow-xs transition-all hover:-translate-y-0.5">
               <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center mb-3">
                 <HiOutlineBriefcase className="w-5 h-5" />
@@ -141,6 +146,14 @@ export default function AdminDashboardPage() {
               <div className="text-xs font-semibold text-slate-600 mt-0.5">Blogs & Insights</div>
             </Link>
 
+            <Link href="/admin/case-studies" className="p-4 bg-white border border-slate-200 hover:border-cyan-500 rounded-xl shadow-xs transition-all hover:-translate-y-0.5">
+              <div className="w-9 h-9 rounded-lg bg-cyan-50 text-cyan-600 border border-cyan-200 flex items-center justify-center mb-3">
+                <HiOutlineBookOpen className="w-5 h-5" />
+              </div>
+              <div className="text-xl font-extrabold text-slate-900">{loading ? '...' : activeStats.caseStudiesCount}</div>
+              <div className="text-xs font-semibold text-slate-600 mt-0.5">Case Studies</div>
+            </Link>
+
             <Link href="/admin/testimonials" className="p-4 bg-white border border-slate-200 hover:border-cyan-500 rounded-xl shadow-xs transition-all hover:-translate-y-0.5">
               <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mb-3">
                 <HiOutlineChatAlt2 className="w-5 h-5" />
@@ -149,7 +162,7 @@ export default function AdminDashboardPage() {
               <div className="text-xs font-semibold text-slate-600 mt-0.5">Testimonials</div>
             </Link>
 
-            <Link href="/admin/faqs" className="p-4 bg-white border border-slate-200 hover:border-cyan-500 rounded-xl shadow-xs transition-all hover:-translate-y-0.5 col-span-2 sm:col-span-1">
+            <Link href="/admin/faqs" className="p-4 bg-white border border-slate-200 hover:border-cyan-500 rounded-xl shadow-xs transition-all hover:-translate-y-0.5">
               <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center mb-3">
                 <HiOutlineQuestionMarkCircle className="w-5 h-5" />
               </div>

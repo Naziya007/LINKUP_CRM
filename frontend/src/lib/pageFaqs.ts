@@ -11,6 +11,8 @@ export type PageFaqSlug =
   | 'login'
   | 'blogs'
   | 'blog-detail'
+  | 'case-studies'
+  | 'case-study-detail'
   | 'faqs'
   | 'projects'
   | 'seo'
@@ -27,6 +29,8 @@ export const PAGE_FAQ_LABELS: Record<PageFaqSlug, string> = {
   login: 'Admin Login',
   blogs: 'Blogs & Insights',
   'blog-detail': 'Blog Post Editor',
+  'case-studies': 'Case Studies',
+  'case-study-detail': 'Case Study Detail',
   faqs: 'FAQ Manager',
   projects: 'Projects / Portfolio',
   seo: 'SEO Management',
@@ -43,6 +47,7 @@ const STATIC_ROUTE_FAQ_SLUGS: Record<string, PageFaqSlug> = {
   '/admin': 'dashboard',
   '/admin/login': 'login',
   '/admin/blogs': 'blogs',
+  '/admin/case-studies': 'case-studies',
   '/admin/faqs': 'faqs',
   '/admin/projects': 'projects',
   '/admin/seo': 'seo',
@@ -72,6 +77,7 @@ export function resolvePageFaqSlug(pathname: string): PageFaqSlug {
 
   if (segments[0] === 'admin') {
     if (segments[1] === 'blogs' && segments.length >= 3) return 'blog-detail';
+    if (segments[1] === 'case-studies' && segments.length >= 3) return 'case-study-detail';
     if (segments[1] === 'services') {
       if (segments.length >= 4) return 'location-service-detail';
       if (segments.length === 3) return 'service-detail';
